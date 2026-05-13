@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>داش بورد حساب CPL و CPA</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    min-height: 100vh;
+    padding: 30px 20px;
+    color: #333;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .brand-header {
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px 28px;
+    margin-bottom: 22px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .brand-logo {
+    height: 70px;
+    width: auto;
+    object-fit: contain;
+  }
+  .brand-logo-fallback {
+    display: none;
+    font-weight: 900;
+    font-size: 28px;
+    font-style: italic;
+    letter-spacing: -1px;
+  }
+  .brand-logo-fallback .el { color: #2d2d2d; }
+  .brand-logo-fallback .tawkeel { color: #e53935; }
+  .brand-logo-fallback .com { color: #2d2d2d; font-size: 18px; }
+  .brand-logo-fallback .ar { display: block; color: #e53935; font-size: 14px; text-align: center; margin-top: 2px; }
+  .brand-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1e3c72;
+  }
+  h1 {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 24px;
+    font-size: 30px;
+    font-weight: 700;
+  }
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 28px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    margin-bottom: 24px;
+  }
+  .card h2 {
+    color: #1e3c72;
+    margin-bottom: 20px;
+    font-size: 20px;
+    border-right: 4px solid #2a5298;
+    padding-right: 12px;
+  }
+  .inputs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+  }
+  .field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #444;
+    font-size: 14px;
+  }
+  .field .hint {
+    font-size: 12px;
+    color: #888;
+    font-weight: 400;
+    margin-right: 6px;
+  }
+  .field input {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 17px;
+    border: 2px solid #e0e6ed;
+    border-radius: 10px;
+    transition: all 0.2s;
+    font-family: inherit;
+    direction: ltr;
+    text-align: right;
+  }
+  .field input:focus {
+    outline: none;
+    border-color: #2a5298;
+    box-shadow: 0 0 0 3px rgba(42,82,152,0.15);
+  }
+  .fx-row {
+    background: #fff8e6;
+    border: 1px dashed #f0b400;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .fx-row label {
+    font-weight: 600;
+    color: #7a5a00;
+    font-size: 14px;
+    margin-bottom: 0;
+  }
+  .fx-row input {
+    width: 140px;
+    padding: 10px 14px;
+    font-size: 16px;
+    border: 2px solid #f0b400;
+    border-radius: 8px;
+    direction: ltr;
+    text-align: right;
+    font-family: inherit;
+  }
+  .fx-row .fx-note {
+    color: #7a5a00;
+    font-size: 13px;
+    flex: 1;
+    min-width: 200px;
+  }
+  .results-section {
+    margin-top: 12px;
+  }
+  .results-section h3 {
+    color: #1e3c72;
+    font-size: 16px;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e0e6ed;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .results-section h3 .flag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .flag-usd { background: #dbeafe; color: #1e40af; }
+  .flag-egp { background: #fce7f3; color: #9d174d; }
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+    margin-bottom: 24px;
+  }
+  .metric {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8edf2 100%);
+    border-radius: 12px;
+    padding: 22px;
+    text-align: center;
+    border: 1px solid #d8e0e8;
+    transition: transform 0.2s;
+  }
+  .metric:hover { transform: translateY(-3px); }
+  .metric.highlight {
+    background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+    color: #fff;
+    border: none;
+  }
+  .metric.success {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: #fff;
+    border: none;
+  }
+  .metric.client-cpl {
+    background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+    color: #fff;
+    border: none;
+  }
+  .metric.client-cpa {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: #fff;
+    border: none;
+  }
+  .metric.warning {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: #fff;
+    border: none;
+  }
+  .metric-label {
+    font-size: 13px;
+    opacity: 0.9;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  .metric-value {
+    font-size: 26px;
+    font-weight: 700;
+    direction: ltr;
+    line-height: 1.2;
+  }
+  .metric-sub {
+    font-size: 12px;
+    opacity: 0.8;
+    margin-top: 6px;
+  }
+  .formula-box {
+    background: #f8fafc;
+    border-right: 3px solid #2a5298;
+    padding: 12px 16px;
+    margin-top: 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #555;
+    direction: ltr;
+    text-align: left;
+    font-family: 'Consolas', monospace;
+  }
+  .actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  .btn {
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-reset { background: #ef4444; color: #fff; }
+  .btn-reset:hover { background: #dc2626; }
+  .btn-print { background: #2a5298; color: #fff; }
+  .btn-print:hover { background: #1e3c72; }
+  .footer {
+    text-align: center;
+    color: rgba(255,255,255,0.7);
+    margin-top: 20px;
+    font-size: 13px;
+  }
+  @media (max-width: 600px) {
+    h1 { font-size: 24px; }
+    .metric-value { font-size: 22px; }
+  }
+  @media print {
+    body { background: #fff; padding: 0; }
+    .card { box-shadow: none; border: 1px solid #ddd; }
+    .actions, .footer { display: none; }
+    h1, .subtitle { color: #1e3c72 !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="brand-header">
+      <img src="eltawkeel-logo.png" alt="ElTawkeel.com" class="brand-logo"
+           onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='inline-block';">
+      <span id="logoFallback" class="brand-logo-fallback">
+        <span class="el">EL</span><span class="tawkeel">TAWKEEL</span><span class="com">.com</span>
+        <span class="ar">التوكيل</span>
+      </span>
+      <span class="brand-name">التوكيل</span>
+    </div>
+    <div class="card">
+      <h2>المدخلات / Inputs</h2>
+      <div class="inputs-grid">
+        <div class="field">
+          <label for="budget">الميزانية <span class="hint">(USD $)</span></label>
+          <input type="number" id="budget" placeholder="0" min="0" step="any">
+        </div>
+        <div class="field">
+          <label for="leads">عدد الـ Leads</label>
+          <input type="number" id="leads" placeholder="0" min="0" step="1">
+        </div>
+        <div class="field">
+          <label for="sales">عدد العربيات المباعة</label>
+          <input type="number" id="sales" placeholder="0" min="0" step="1">
+        </div>
+      </div>
+
+      <div class="fx-row">
+        <label for="fxRate">سعر صرف الدولار &larr; جنيه:</label>
+        <input type="number" id="fxRate" value="50" min="0" step="0.01">
+        <span class="fx-note">عدّل الرقم حسب السعر الحالي وقت تقديم التقرير للكلاينت</span>
+      </div>
+
+    </div>
+
+    <div class="card">
+      <h2>النتائج / Results</h2>
+
+      <div class="results-section">
+        <h3>للعرض على الكلاينت <span class="flag flag-egp">EGP جنيه</span></h3>
+        <div class="results-grid">
+          <div class="metric client-cpl">
+            <div class="metric-label">تكلفة الليد الواحد</div>
+            <div class="metric-value" id="cplEGP">—</div>
+            <div class="metric-sub">Cost Per Lead</div>
+          </div>
+          <div class="metric client-cpa">
+            <div class="metric-label">تكلفة البيعة الواحدة</div>
+            <div class="metric-value" id="cpaEGP">—</div>
+            <div class="metric-sub">Cost Per Acquisition</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">إجمالي الميزانية بالجنيه</div>
+            <div class="metric-value" id="budgetEGP">—</div>
+            <div class="metric-sub">Total Budget (EGP)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="results-section">
+        <h3>الأرقام الأصلية <span class="flag flag-usd">USD دولار</span></h3>
+        <div class="results-grid">
+          <div class="metric highlight">
+            <div class="metric-label">CPL (USD)</div>
+            <div class="metric-value" id="cplUSD">—</div>
+            <div class="metric-sub">Cost Per Lead</div>
+          </div>
+          <div class="metric success">
+            <div class="metric-label">CPA (USD)</div>
+            <div class="metric-value" id="cpaUSD">—</div>
+            <div class="metric-sub">Cost Per Acquisition</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="results-section">
+        <h3>مؤشرات الأداء</h3>
+        <div class="results-grid">
+          <div class="metric warning">
+            <div class="metric-label">Conversion Rate</div>
+            <div class="metric-value" id="cvr">—</div>
+            <div class="metric-sub">نسبة تحويل الليدز لمبيعات</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Leads لكل بيعة</div>
+            <div class="metric-value" id="ratio">—</div>
+            <div class="metric-sub">Leads per Sale</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="formula-box">
+        CPL = Budget &divide; Leads &nbsp;|&nbsp; CPA = Budget &divide; Sales &nbsp;|&nbsp; EGP = USD &times; FX Rate
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  const budgetEl = document.getElementById('budget');
+  const leadsEl  = document.getElementById('leads');
+  const salesEl  = document.getElementById('sales');
+  const fxEl     = document.getElementById('fxRate');
+
+  const cplUSDEl    = document.getElementById('cplUSD');
+  const cpaUSDEl    = document.getElementById('cpaUSD');
+  const cplEGPEl    = document.getElementById('cplEGP');
+  const cpaEGPEl    = document.getElementById('cpaEGP');
+  const budgetEGPEl = document.getElementById('budgetEGP');
+  const cvrEl       = document.getElementById('cvr');
+  const ratioEl     = document.getElementById('ratio');
+
+  function formatUSD(v) {
+    if (!isFinite(v) || isNaN(v)) return '—';
+    return '$ ' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function formatEGP(v) {
+    if (!isFinite(v) || isNaN(v)) return '—';
+    return v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.م';
+  }
+
+  function calculate() {
+    const budget = parseFloat(budgetEl.value);
+    const leads  = parseFloat(leadsEl.value);
+    const sales  = parseFloat(salesEl.value);
+    const fx     = parseFloat(fxEl.value);
+
+    const cplUSD = (budget > 0 && leads > 0) ? budget / leads : NaN;
+    const cpaUSD = (budget > 0 && sales > 0) ? budget / sales : NaN;
+
+    cplUSDEl.textContent = formatUSD(cplUSD);
+    cpaUSDEl.textContent = formatUSD(cpaUSD);
+
+    if (fx > 0) {
+      cplEGPEl.textContent    = formatEGP(cplUSD * fx);
+      cpaEGPEl.textContent    = formatEGP(cpaUSD * fx);
+      budgetEGPEl.textContent = (budget > 0) ? formatEGP(budget * fx) : '—';
+    } else {
+      cplEGPEl.textContent = cpaEGPEl.textContent = budgetEGPEl.textContent = '—';
+    }
+
+    cvrEl.textContent = (leads > 0 && sales >= 0)
+      ? ((sales / leads) * 100).toFixed(2) + ' %'
+      : '—';
+
+    ratioEl.textContent = (sales > 0 && leads > 0)
+      ? (leads / sales).toFixed(1)
+      : '—';
+  }
+
+  function resetAll() {
+    budgetEl.value = '';
+    leadsEl.value  = '';
+    salesEl.value  = '';
+    calculate();
+  }
+
+  [budgetEl, leadsEl, salesEl, fxEl].forEach(el => el.addEventListener('input', calculate));
+</script>
+</body>
+</html>
